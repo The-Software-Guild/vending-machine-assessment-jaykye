@@ -1,5 +1,6 @@
 package ui;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class VendingMachineView {
@@ -13,16 +14,20 @@ public class VendingMachineView {
         io.print("Welcome!");
     }
 
-    public int printMenuAndGetSelection() {
+    /**
+     * Print out all the items, prices and the inventory.
+     * @return
+     */
+    public int printItemAndGetSelection() {
         io.print("Select one from the following items:");
-        io.print("1. List Students");
-        io.print("2. Create New Student");
-        io.print("3. View a Student");
-        io.print("4. Remove a Student");
-        io.print("5. Exit");
+
         return io.readInt("Please select from the above choices.", 1, 5);
     }
 
+
+    public String acceptCurrency() {
+        return io.readString("Please insert cash amount. Separate dollar and cents by '.' ");
+    }
 
 }
 
