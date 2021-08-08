@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface VendingMachineService {
+
     // Pass through methods from dao.
 
     void loadData() throws VendingMachinePersistenceException;
@@ -34,7 +35,6 @@ public interface VendingMachineService {
     /**
      * Sells item, but only allow the quantity in the inventory.
      * @param name
-     * @param quantity
      */
-    void sellItem(String name, int quantity) throws InvalidPropertiesFormatException;
+    void sellItem(String name);
 }

@@ -3,15 +3,19 @@ package service;
 import dao.VendingMachineAuditDao;
 import dao.VendingMachineDao;
 import dao.VendingMachinePersistenceException;
+import dto.Changes;
 import dto.Item;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 import java.util.Map;
 
 public class VendingMachineServiceImpl implements VendingMachineService {
     VendingMachineDao dao;
     VendingMachineAuditDao auditDao;
+    BigDecimal remainingCash = new BigDecimal("0");
 
     public VendingMachineServiceImpl(VendingMachineDao dao, VendingMachineAuditDao auditDao) {
         this.dao = dao;
@@ -20,7 +24,6 @@ public class VendingMachineServiceImpl implements VendingMachineService {
 
     public VendingMachineServiceImpl() {
     }
-
 
     // Pass through methods from dao.
     @Override
@@ -82,7 +85,23 @@ public class VendingMachineServiceImpl implements VendingMachineService {
 
     @Override
     public Map calculateChangeToGive(BigDecimal remainingCash) {
-        return null;
+        Map<Changes, Integer> changeMap = new HashMap<>();
+        for (Changes c : Changes.getAllCoins()){
+            changeMap.put(c, 0);
+        }
+
+        for (Changes change: Changes.getAllCoins()){
+            while (remainingCash.compareTo(change.getValue()) >= 0){
+                changeMap.put(change, changeMap.get(change)+1);
+                remainingCash = remainingCash.subtract(change.getValue());
+            }
+        }
+
+        return changeMap;
+    }
+
+    @Override
+    public void sellItem(String name) {
     }
 
     private void validateItem(Item item) throws VendingMachineValidationException {
@@ -106,7 +125,6 @@ public class VendingMachineServiceImpl implements VendingMachineService {
             throw new VendingMachineDuplicateItemException("Item already exits. Cannot add duplicate.");
         }
     }
-
 
 
 }
