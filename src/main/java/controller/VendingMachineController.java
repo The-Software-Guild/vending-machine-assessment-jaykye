@@ -19,13 +19,14 @@ public class VendingMachineController {
     public VendingMachineController() {
     }
 
-    public VendingMachineController(VendingMachineService service, VendingMachineView view) {
+    public VendingMachineController(VendingMachineService service,
+                                    VendingMachineView view) {
         this.service = service;
         this.view = view;
     }
 
     public void run() {
-        boolean imDone = false;
+        BigDecimal remainingCash = new BigDecimal("0");
 
         try {
             // 1. Display menu
@@ -37,12 +38,15 @@ public class VendingMachineController {
             // 3. GetItemSelection -- only allowed to choose one.
             getSelectionAndSellItem(cashAmount);
 
+            // give out changes here.
+
             // Program shuts down.
             shutdown();
         }
 
         catch (VendingMachinePersistenceException e){
-//            file was not able to persist.
+            System.out.println(e.getMessage());
+            view.displayDataErrorMessage();
         }
 
     }
@@ -55,12 +59,13 @@ public class VendingMachineController {
     }
 
     private BigDecimal acceptFund() {
-        BigDecimal cashAmount = new BigDecimal("0");
         boolean hasError = false;
         do {
             String fundAmountString = view.displayMessageAndGetFund();
+
             try {
-                cashAmount = service.processFunding(fundAmountString); // service has variable (BigDecimal remaining) to store the cash amount.
+                BigDecimal fund = service.processFunding(fundAmountString);
+                service.setRemainingCash(service.getRemainingCash().add(fund));
                 hasError = false;
             } catch (VendingMachineInvalidCashValueException e) {
                 hasError = true;
@@ -70,17 +75,19 @@ public class VendingMachineController {
         }
         while (hasError);
 //            audit
-        return cashAmount;
+        return service.getRemainingCash();
     }
 
     public void getSelectionAndSellItem(BigDecimal cashAmount) throws
             VendingMachinePersistenceException {
         // Catch and display exception messages in a loop. -- Validation is done in service layer.
-        boolean hasError = false;
+        boolean selectItemAgain = false;
+        int userSelection = 0;
+
         do {
             String selectedItemName = view.getItemSelection();
             Item selectedItem = service.getItem(selectedItemName);
-            // getItemSelection can catch errors if not enough cash -> prompt
+
             try {
                 BigDecimal remainingCash = service.sellItem(selectedItemName, cashAmount);
                 view.displaySuccessfulPurchaseMessage();
@@ -89,16 +96,36 @@ public class VendingMachineController {
                 Map changesToGive = service.calculateChangeToGive(remainingCash);
 //                    audit // -- record pennies dispensed.
                 view.displayReturnChanges(changesToGive);
-                hasError = false;
+                selectItemAgain = false;
             } catch (VendingMachineNoInventoryException e) {
                 view.displayNoInventoryMessage();
-                hasError = true;
+                userSelection = view.getNoInventoryAction();
+                switch (userSelection){
+                    case 1:
+                        selectItemAgain = true;
+                        break;
+                    case 2:
+                        selectItemAgain = false;
+                        break;
+                }
             } catch (VendingMachineInsufficientFundException e) {
                 view.displayNotEnoughFundMessage();
-                hasError = true;
+                userSelection = view.getInsufficientFundAction();
+                switch (userSelection){
+                    case 1:
+                        selectItemAgain = true;
+                        break;
+                    case 2:
+                        selectItemAgain = true;
+                        acceptFund();
+                        break;
+                    case 3:
+                        selectItemAgain = false;
+                        break;
+                }
             }
         }
-        while (hasError);
+        while (selectItemAgain);
     }
 
     private void shutdown() throws VendingMachinePersistenceException{

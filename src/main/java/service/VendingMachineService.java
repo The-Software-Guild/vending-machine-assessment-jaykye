@@ -45,4 +45,7 @@ public interface VendingMachineService {
             VendingMachineNoInventoryException,
             VendingMachinePersistenceException;
 
+    BigDecimal getRemainingCash();
+
+    void setRemainingCash(BigDecimal remainingCash);
 }

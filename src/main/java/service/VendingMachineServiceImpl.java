@@ -16,6 +16,16 @@ public class VendingMachineServiceImpl implements VendingMachineService {
     VendingMachineAuditDao auditDao;
     BigDecimal remainingCash = new BigDecimal("0");
 
+    @Override
+    public BigDecimal getRemainingCash() {
+        return remainingCash;
+    }
+
+    @Override
+    public void setRemainingCash(BigDecimal remainingCash) {
+        this.remainingCash = remainingCash;
+    }
+
     public VendingMachineServiceImpl(VendingMachineDao dao, VendingMachineAuditDao auditDao) {
         this.dao = dao;
         this.auditDao = auditDao;
@@ -68,7 +78,7 @@ public class VendingMachineServiceImpl implements VendingMachineService {
 
     @Override
     public BigDecimal processFunding(String moneyValue) throws VendingMachineInvalidCashValueException {
-        String[] tokens = moneyValue.split(".");
+        String[] tokens = moneyValue.split("\\.");
         if (tokens[1].length() > 2){
             throw new VendingMachineInvalidCashValueException("Cash value cannot have more than 2 decimals.");
         }
@@ -160,6 +170,7 @@ public class VendingMachineServiceImpl implements VendingMachineService {
     public void writeAuditEntry(String message) throws
             VendingMachinePersistenceException{
     }
+
 
 
 }

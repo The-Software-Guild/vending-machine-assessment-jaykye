@@ -3,7 +3,6 @@ package ui;
 import dto.Changes;
 import dto.Item;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -37,10 +36,9 @@ public class VendingMachineView {
         io.print("======= Items ========");
         for (Item item: items){
             io.print("Name: " + item.getName()
-                    + " Price: " + item.getPrice()
-                    + " Inventory: " + item.getInventory()
+                    + " | Price: " + item.getPrice()
+                    + " | Inventory: " + item.getInventory()
             );
-            io.print("");
         }
     }
 
@@ -54,12 +52,13 @@ public class VendingMachineView {
 
     public void displaySuccessfulPurchaseMessage(){
         io.print("Your purchase was successful.");
-
+        io.print("");
     }
 
     public void displayReturnChanges(Map<Changes, Integer> changesToGive){
         int numOfCoins;
 
+        io.print("Here are your changes:");
         for (Changes coin: changesToGive.keySet()){
             numOfCoins = changesToGive.get(coin);
             if (numOfCoins > 0) {
@@ -83,5 +82,23 @@ public class VendingMachineView {
     public void displayGoodbyeMessage() {
         io.print("Thank you and goodbye.");
     }
+
+    public void displayDataErrorMessage() {
+        io.print("Data Not loaded successfully.");
+    }
+
+    public int getNoInventoryAction(){
+        io.print("1. Choose another item.");
+        io.print("2. Exit");
+        return io.readInt("Select what action to take.", 1,2);
+    }
+
+    public int getInsufficientFundAction(){
+        io.print("1. Choose another item.");
+        io.print("2. Add more fund.");
+        io.print("3. Exit");
+        return io.readInt("Select what action to take.", 1,3);
+    }
+
 }
 

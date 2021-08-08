@@ -11,11 +11,13 @@ import ui.VendingMachineView;
 public class App {
     public static void main(String[] args) {
         UserIO io = new UserIOConsoleImpl();
-        VendingMachineView view = new VendingMachineView(io);  // View needs access to io.
+        VendingMachineView view = new VendingMachineView(io);
         VendingMachineAuditDao auditDao = new VendingMachineAuditImpl();
-        VendingMachineDao dao = new VendingMachineDaoFileImpl();  // this will have hardcoded storage location.
-        VendingMachineServiceImpl service = new VendingMachineServiceImpl(dao, auditDao); // Service needs dao access.
-        VendingMachineController controller = new VendingMachineController(service, view); // Controller needs service access.
+        // Dao has hardcoded storage location.
+        VendingMachineDao dao = new VendingMachineDaoFileImpl();
+        VendingMachineServiceImpl service = new VendingMachineServiceImpl(dao, auditDao);
+        // Controller needs service access.
+        VendingMachineController controller = new VendingMachineController(service, view);
 
         controller.run();
     }
