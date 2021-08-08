@@ -4,7 +4,6 @@ import dao.VendingMachinePersistenceException;
 import dto.Item;
 
 import java.math.BigDecimal;
-import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +13,10 @@ public interface VendingMachineService {
 
     void loadData() throws VendingMachinePersistenceException;
 
+    /**
+     * Dumps items map into the dao source file.
+     * @throws VendingMachinePersistenceException
+     */
     void writeData() throws VendingMachinePersistenceException ;
 
     Item createItem(String name, Item item)  throws
@@ -28,13 +31,18 @@ public interface VendingMachineService {
 
     List getAllItems();
 
-    BigDecimal acceptCurrency(String moneyValue) throws VendingMachineInvalidCashValueException;
+    BigDecimal processFunding(String moneyValue) throws VendingMachineInvalidCashValueException;
 
-    Map calculateChangeToGive(BigDecimal remainingCash);
+    Map calculateChangeToGive(BigDecimal remainingCash) throws VendingMachinePersistenceException;
 
     /**
      * Sells item, but only allow the quantity in the inventory.
+     * This one has calls to internal validation functions.
      * @param name
+     * @return
      */
-    void sellItem(String name);
+    BigDecimal sellItem(String name, BigDecimal cashAmount) throws VendingMachineInsufficientFundException,
+            VendingMachineNoInventoryException,
+            VendingMachinePersistenceException;
+
 }

@@ -1,0 +1,4 @@
+Coca-Cola::3.99::12
+Sandwich::6.99::6
+Lays chip::2.99::11
+Pringles::4.25::4

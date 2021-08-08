@@ -8,7 +8,6 @@ import dto.Item;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
-import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 import java.util.Map;
 
@@ -68,7 +67,7 @@ public class VendingMachineServiceImpl implements VendingMachineService {
     }
 
     @Override
-    public BigDecimal acceptCurrency(String moneyValue) throws VendingMachineInvalidCashValueException {
+    public BigDecimal processFunding(String moneyValue) throws VendingMachineInvalidCashValueException {
         String[] tokens = moneyValue.split(".");
         if (tokens[1].length() > 2){
             throw new VendingMachineInvalidCashValueException("Cash value cannot have more than 2 decimals.");
@@ -84,7 +83,8 @@ public class VendingMachineServiceImpl implements VendingMachineService {
     }
 
     @Override
-    public Map calculateChangeToGive(BigDecimal remainingCash) {
+    public Map calculateChangeToGive(BigDecimal remainingCash) throws
+            VendingMachinePersistenceException {
         Map<Changes, Integer> changeMap = new HashMap<>();
         for (Changes c : Changes.getAllCoins()){
             changeMap.put(c, 0);
@@ -97,13 +97,44 @@ public class VendingMachineServiceImpl implements VendingMachineService {
             }
         }
 
+        auditDao.writeAuditEntry("Changes gave: ");
+
         return changeMap;
     }
 
     @Override
-    public void sellItem(String name) {
+    public BigDecimal sellItem(String name, BigDecimal cashAmount) throws
+            VendingMachineInsufficientFundException,
+            VendingMachineNoInventoryException,
+            VendingMachinePersistenceException {
+
+        Item currItem = dao.getItem(name);
+        int currInventory = currItem.getInventory();
+        checkInventory(currItem);
+        checkFund(currItem, cashAmount);
+
+        // Now passed.
+        dao.updateItemInventory(name, currInventory-1);
+        auditDao.writeAuditEntry("Sold item: " + name);
+        BigDecimal cashBalance = cashAmount.subtract(currItem.getPrice());
+        return cashBalance;
     }
 
+    private void checkInventory(Item item) throws
+            VendingMachineNoInventoryException {
+        if (item.getInventory() <=0) {
+            throw new VendingMachineNoInventoryException("Not enough inventory.");
+        }
+    }
+
+    private void checkFund(Item item, BigDecimal cashAmount) throws
+            VendingMachineInsufficientFundException {
+        if (cashAmount.compareTo(item.getPrice()) < 0){
+            throw new VendingMachineInsufficientFundException("Insufficient fund.");
+        }
+    }
+
+    // This is for Admin menu.
     private void validateItem(Item item) throws VendingMachineValidationException {
         // Some rules for item object.
 
@@ -124,6 +155,10 @@ public class VendingMachineServiceImpl implements VendingMachineService {
         if (dao.getItem(name) != null){
             throw new VendingMachineDuplicateItemException("Item already exits. Cannot add duplicate.");
         }
+    }
+
+    public void writeAuditEntry(String message) throws
+            VendingMachinePersistenceException{
     }
 
 

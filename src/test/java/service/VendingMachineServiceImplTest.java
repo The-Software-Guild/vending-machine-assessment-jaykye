@@ -1,15 +1,11 @@
 package service;
 
-import controller.VendingMachineController;
 import dao.VendingMachineAuditDao;
 import dao.VendingMachineAuditImpl;
 import dao.VendingMachineDao;
 import dao.VendingMachineDaoFileImpl;
 import dto.Changes;
 import org.junit.jupiter.api.Test;
-import ui.UserIO;
-import ui.UserIOConsoleImpl;
-import ui.VendingMachineView;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -39,7 +35,12 @@ class VendingMachineServiceImplTest {
         expectedMap.put(Changes.CENT, 4);
 
         // Act
-        Map answer = service.calculateChangeToGive(remainingCash);
+        Map answer = null;
+        try {
+            answer = service.calculateChangeToGive(remainingCash);
+        } catch (dao.VendingMachinePersistenceException e) {
+            e.printStackTrace();
+        }
 
         // Assert
         assertEquals(expectedMap, answer);
