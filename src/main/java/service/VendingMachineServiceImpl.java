@@ -72,29 +72,28 @@ public class VendingMachineServiceImpl implements VendingMachineService {
     }
 
     @Override
-    public List getAllItems() {
+    public List<Item> getAllItems() {
         return dao.getAllItems();
     }
 
     @Override
     public BigDecimal processFunding(String moneyValue) throws VendingMachineInvalidCashValueException {
         String[] tokens = moneyValue.split("\\.");
-        if (tokens[1].length() > 2){
+        if (tokens.length < 2 || tokens[1].length() > 2){
             throw new VendingMachineInvalidCashValueException("Cash value cannot have more than 2 decimals.");
         }
         try {
-            Integer.parseInt(tokens[0]);
+            Integer.parseInt(tokens[0]);  // Use parseInt to erroneous input.
             Integer.parseInt(tokens[1]);
         }
-        catch (NumberFormatException e){
+        catch (NumberFormatException | ArrayIndexOutOfBoundsException e){
             throw new VendingMachineInvalidCashValueException("Invalid cash value", e);
         }
         return new BigDecimal(moneyValue);
     }
 
     @Override
-    public Map calculateChangeToGive(BigDecimal remainingCash) throws
-            VendingMachinePersistenceException {
+    public Map calculateChangeToGive(BigDecimal remainingCash) {
         Map<Changes, Integer> changeMap = new HashMap<>();
         for (Changes c : Changes.getAllCoins()){
             changeMap.put(c, 0);
@@ -106,9 +105,6 @@ public class VendingMachineServiceImpl implements VendingMachineService {
                 remainingCash = remainingCash.subtract(change.getValue());
             }
         }
-
-        auditDao.writeAuditEntry("Changes gave: ");
-
         return changeMap;
     }
 
@@ -127,6 +123,7 @@ public class VendingMachineServiceImpl implements VendingMachineService {
         dao.updateItemInventory(name, currInventory-1);
         auditDao.writeAuditEntry("Sold item: " + name);
         BigDecimal cashBalance = cashAmount.subtract(currItem.getPrice());
+
         return cashBalance;
     }
 

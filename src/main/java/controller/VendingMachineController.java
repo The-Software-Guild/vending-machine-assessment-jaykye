@@ -1,6 +1,7 @@
 package controller;
 
 import dao.VendingMachinePersistenceException;
+import dto.Changes;
 import dto.Item;
 import service.VendingMachineInsufficientFundException;
 import service.VendingMachineInvalidCashValueException;
@@ -26,19 +27,23 @@ public class VendingMachineController {
     }
 
     public void run() {
-        BigDecimal remainingCash = new BigDecimal("0");
+        List<Item> items;
 
         try {
-            // 1. Display menu
-            displayItems();
+            // 0. Load Data
+            startup();
+
+            // 1. Get Items and display items.
+            items = getAndDisplayItems(); // get list here.
 
             // 2. Accept cash
-            BigDecimal cashAmount = acceptFund();
+            acceptFund();
 
             // 3. GetItemSelection -- only allowed to choose one.
-            getSelectionAndSellItem(cashAmount);
+            getSelectionAndSellItem(items);
 
-            // give out changes here.
+            // 4. give out changes here.
+            dispenseChanges();
 
             // Program shuts down.
             shutdown();
@@ -51,15 +56,20 @@ public class VendingMachineController {
 
     }
 
-    private void displayItems() throws VendingMachinePersistenceException {
+    private void startup() throws VendingMachinePersistenceException  {
         service.loadData();
         view.displayGreetingMessage();
-        List<Item> items = service.getAllItems();
-        view.displayItems(items);
     }
 
-    private BigDecimal acceptFund() {
+    private List<Item> getAndDisplayItems(){
+        List<Item> items = service.getAllItems();
+        view.displayItems(items);
+        return items;
+    }
+
+    private void acceptFund() {
         boolean hasError = false;
+
         do {
             String fundAmountString = view.displayMessageAndGetFund();
 
@@ -69,38 +79,43 @@ public class VendingMachineController {
                 hasError = false;
             } catch (VendingMachineInvalidCashValueException e) {
                 hasError = true;
-                // Take care of this. in a loop.
                 view.displayWrongFund();
             }
         }
         while (hasError);
-//            audit
-        return service.getRemainingCash();
+
+        view.displayRemainingFund(service.getRemainingCash());
     }
 
-    public void getSelectionAndSellItem(BigDecimal cashAmount) throws
+    private void getSelectionAndSellItem(List<Item> allItemList) throws
             VendingMachinePersistenceException {
-        // Catch and display exception messages in a loop. -- Validation is done in service layer.
+
         boolean selectItemAgain = false;
-        int userSelection = 0;
+        int subMenuUserSelection = 0;
 
         do {
-            String selectedItemName = view.getItemSelection();
-            Item selectedItem = service.getItem(selectedItemName);
+            int selectedItemInt = view.getItemSelection(allItemList);
+            if (selectedItemInt == allItemList.size()+1){  // The following number of the max index is used as Exit.
+                return;
+            }
+
+            Item selectedItem = allItemList.get(selectedItemInt-1);  // Menu item starts from 1. Need to shift.
+            String selectedItemName = selectedItem.getName();
 
             try {
+                BigDecimal cashAmount = service.getRemainingCash();
                 BigDecimal remainingCash = service.sellItem(selectedItemName, cashAmount);
+                service.setRemainingCash(remainingCash);
                 view.displaySuccessfulPurchaseMessage();
 
-                // Dispense changes.
-                Map changesToGive = service.calculateChangeToGive(remainingCash);
-//                    audit // -- record pennies dispensed.
-                view.displayReturnChanges(changesToGive);
                 selectItemAgain = false;
-            } catch (VendingMachineNoInventoryException e) {
-                view.displayNoInventoryMessage();
-                userSelection = view.getNoInventoryAction();
-                switch (userSelection){
+            }
+
+            catch (VendingMachineNoInventoryException e) {
+                view.displayErrorMessage(e.getMessage());
+                subMenuUserSelection = view.getNoInventoryAction();
+
+                switch (subMenuUserSelection){
                     case 1:
                         selectItemAgain = true;
                         break;
@@ -108,10 +123,13 @@ public class VendingMachineController {
                         selectItemAgain = false;
                         break;
                 }
-            } catch (VendingMachineInsufficientFundException e) {
-                view.displayNotEnoughFundMessage();
-                userSelection = view.getInsufficientFundAction();
-                switch (userSelection){
+            }
+
+            catch (VendingMachineInsufficientFundException e) {
+                view.displayErrorMessage(e.getMessage());
+                subMenuUserSelection = view.getInsufficientFundAction();
+
+                switch (subMenuUserSelection){
                     case 1:
                         selectItemAgain = true;
                         break;
@@ -128,8 +146,19 @@ public class VendingMachineController {
         while (selectItemAgain);
     }
 
+    private void dispenseChanges(){
+        // Dispense changes.
+        BigDecimal remainingCash = service.getRemainingCash();
+        view.displayRemainingFund(remainingCash);
+        Map<Changes, Integer> changesToGive = service.calculateChangeToGive(remainingCash);
+        view.displayReturnChanges(changesToGive);
+    }
+
     private void shutdown() throws VendingMachinePersistenceException{
         service.writeData();
         view.displayGoodbyeMessage();
     }
+
+
+
 }

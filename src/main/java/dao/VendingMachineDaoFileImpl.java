@@ -2,9 +2,11 @@ package dao;
 
 import dto.Item;
 
+import java.awt.*;
 import java.io.*;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.List;
 
 public class VendingMachineDaoFileImpl implements VendingMachineDao{
 
@@ -96,8 +98,8 @@ public class VendingMachineDaoFileImpl implements VendingMachineDao{
     }
 
     @Override
-    public List getAllItems() {
-        return new ArrayList(items.values());
+    public List<Item> getAllItems() {
+        return new ArrayList<Item>(items.values());
     }
 
     @Override

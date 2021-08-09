@@ -3,6 +3,7 @@ package ui;
 import dto.Changes;
 import dto.Item;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -13,9 +14,6 @@ public class VendingMachineView {
         this.io = io;
     }
 
-    public void printGreetingMessage(){
-        io.print("Welcome!");
-    }
 
     /**
      * Print out all the items, prices and the inventory.
@@ -34,20 +32,22 @@ public class VendingMachineView {
 
     public void displayItems(List<Item> items) {
         io.print("======= Items ========");
+        int i = 1;
         for (Item item: items){
-            io.print("Name: " + item.getName()
+            io.print(i++ + ". Name: " + item.getName()
                     + " | Price: " + item.getPrice()
                     + " | Inventory: " + item.getInventory()
             );
         }
+        io.print(i + ". Exit");
     }
 
     public String displayMessageAndGetFund(){
-        return io.readString("Please insert cash amount. Separate dollar and cents by '.' ");
+        return io.readString("Please insert fund. Separate dollar and cents by '.' ");
     }
 
-    public String getItemSelection(){
-        return io.readString("Enter the item name.");
+    public int getItemSelection(List allItemList){
+        return io.readInt("Enter the item number.", 1, allItemList.size()+1);
     }
 
     public void displaySuccessfulPurchaseMessage(){
@@ -100,5 +100,13 @@ public class VendingMachineView {
         return io.readInt("Select what action to take.", 1,3);
     }
 
+    public void displayRemainingFund(BigDecimal balance){
+        io.print("Remaining Balance: $" +  balance);
+    }
+
+    public void displayErrorMessage(String errorMsg) {
+        io.print("=== ERROR ===");
+        io.print(errorMsg);
+    }
 }
 

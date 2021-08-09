@@ -1,6 +1,7 @@
 package service;
 
 import dao.VendingMachinePersistenceException;
+import dto.Changes;
 import dto.Item;
 
 import java.math.BigDecimal;
@@ -29,11 +30,11 @@ public interface VendingMachineService {
 
     Item getItem(String name);
 
-    List getAllItems();
+    List<Item> getAllItems();
 
     BigDecimal processFunding(String moneyValue) throws VendingMachineInvalidCashValueException;
 
-    Map calculateChangeToGive(BigDecimal remainingCash) throws VendingMachinePersistenceException;
+    Map<Changes, Integer> calculateChangeToGive(BigDecimal remainingCash);
 
     /**
      * Sells item, but only allow the quantity in the inventory.

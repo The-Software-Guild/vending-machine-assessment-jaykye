@@ -105,5 +105,15 @@ class VendingMachineDaoFileImplTest {
         assertEquals(retrievedItem.getInventory(), newInventory, "Must contain first item.");
     }
 
+    @Test
+    void sellItemTest(){
+        // Arrange
+        String name1 = "Test name1";
+        BigDecimal price1 = new BigDecimal("12.35");
+        int inventory1 = 5;
+        Item testItem1 = new Item(name1, price1, inventory1);
+        testDao.addItem(name1, testItem1);
+    }
+
 
 }

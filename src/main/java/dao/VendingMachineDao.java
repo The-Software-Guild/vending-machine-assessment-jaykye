@@ -25,7 +25,7 @@ public interface VendingMachineDao {
      * Get all the items in the in memory items data.
      * @return The list of items.
      */
-    List getAllItems();
+    List<Item> getAllItems();
 
     /**
      * Get a specific item and display its name, price, inventory

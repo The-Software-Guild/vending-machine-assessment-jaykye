@@ -1,0 +1,6 @@
+2021-08-08T21:48:21.469081800 : Sold item: Pringles
+2021-08-08T21:48:21.477088700 : Changes gave: 
+2021-08-08T21:50:51.689531300 : Sold item: Pringles
+2021-08-08T21:50:51.697538500 : Changes gave: 
+2021-08-08T23:05:18.875692600 : Sold item: Lays chip
+2021-08-08T23:09:48.419774800 : Sold item: Pringles

@@ -36,11 +36,7 @@ class VendingMachineServiceImplTest {
 
         // Act
         Map answer = null;
-        try {
-            answer = service.calculateChangeToGive(remainingCash);
-        } catch (dao.VendingMachinePersistenceException e) {
-            e.printStackTrace();
-        }
+        answer = service.calculateChangeToGive(remainingCash);
 
         // Assert
         assertEquals(expectedMap, answer);
