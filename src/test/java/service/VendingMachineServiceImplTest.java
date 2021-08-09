@@ -5,6 +5,7 @@ import dao.VendingMachineAuditImpl;
 import dao.VendingMachineDao;
 import dao.VendingMachineDaoFileImpl;
 import dto.Changes;
+import dto.Item;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -40,5 +41,15 @@ class VendingMachineServiceImplTest {
 
         // Assert
         assertEquals(expectedMap, answer);
+    }
+
+    @Test
+    void sellItemTest(){
+        // Arrange
+        String name1 = "Test name1";
+        BigDecimal price1 = new BigDecimal("12.35");
+        int inventory1 = 5;
+        Item testItem1 = new Item(name1, price1, inventory1);
+        dao.addItem(name1, testItem1);
     }
 }
