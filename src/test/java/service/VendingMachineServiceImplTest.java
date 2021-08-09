@@ -51,5 +51,18 @@ class VendingMachineServiceImplTest {
         int inventory1 = 5;
         Item testItem1 = new Item(name1, price1, inventory1);
         dao.addItem(name1, testItem1);
+        BigDecimal balance = new BigDecimal("13.00");
+        BigDecimal newBalance = new BigDecimal("0");
+        // Act
+        try{
+        newBalance =  service.sellItem("Test name1", balance);
+        }
+        catch (Exception e ){
+        }
+
+        //Assert
+        assertEquals(testItem1.getInventory(), inventory1-1);
+        assertEquals(newBalance, "0.65");
+
     }
 }
